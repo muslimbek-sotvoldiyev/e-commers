@@ -1,4 +1,7 @@
 "use client";
+
+import type React from "react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,11 +10,13 @@ import { useState } from "react";
 import { useLoginMutation } from "@/lib/service/authApi";
 import { useRouter } from "next/navigation";
 import { GithubIcon } from "lucide-react";
+import Link from "next/link";
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"form">) {
+interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
+  className?: string;
+}
+
+export function LoginForm({ className, ...props }: LoginFormProps) {
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
   const [formData, setFormData] = useState({
@@ -21,13 +26,18 @@ export function LoginForm({
   const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.id]: e.target.value,
+      [id]: value,
     }));
   };
 
-  const saveToLocalStorage = (data: any) => {
+  const saveToLocalStorage = (data: {
+    accessToken: string;
+    refreshToken: string;
+    user: any;
+  }) => {
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
     localStorage.setItem("user", JSON.stringify(data.user));
@@ -38,11 +48,7 @@ export function LoginForm({
     setError("");
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("email", formData.email);
-      formDataToSend.append("password", formData.password);
-
-      const result = await login(formDataToSend).unwrap();
+      const result = await login(formData).unwrap();
 
       if (result && result.accessToken) {
         saveToLocalStorage(result);
@@ -61,7 +67,7 @@ export function LoginForm({
 
   return (
     <form
-      className={cn("flex flex-col gap-6", className)}
+      className={cn("grid gap-6", className)}
       {...props}
       onSubmit={handleSubmit}
     >
@@ -74,7 +80,7 @@ export function LoginForm({
 
       {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -89,9 +95,7 @@ export function LoginForm({
         </div>
 
         <div className="grid gap-2">
-          <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
-          </div>
+          <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
@@ -101,29 +105,32 @@ export function LoginForm({
             disabled={isLoading}
           />
         </div>
+      </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Login"}
-        </Button>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Logging in..." : "Login"}
+      </Button>
 
-        <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-          <span className="relative z-10 bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
+      <div className="relative text-center">
+        <span className="bg-background px-2 text-sm text-muted-foreground">
+          Or continue with
+        </span>
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
         </div>
-
-        <Button variant="outline" className="w-full" disabled={isLoading}>
-          <GithubIcon />
-          Login with GitHub
-        </Button>
       </div>
 
-      <div className="text-center text-sm">
+      <Button variant="outline" className="w-full" disabled={isLoading}>
+        <GithubIcon className="mr-2 h-4 w-4" />
+        Login with GitHub
+      </Button>
+
+      <p className="text-center text-sm">
         Don&apos;t have an account?{" "}
-        <a href="/register" className="underline underline-offset-4">
+        <Link href="/register" className="underline underline-offset-4">
           Sign up
-        </a>
-      </div>
+        </Link>
+      </p>
     </form>
   );
 }

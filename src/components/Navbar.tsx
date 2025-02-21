@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import Link from "next/link";
+import { useGetWishlistQuery } from "@/lib/service/api";
 
 const categories = [
   { name: "Products", path: "/products", icon: ShoppingBag },
@@ -30,6 +31,12 @@ export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const {
+    data: wishlist,
+    isLoading: wishlistLoading,
+    refetch,
+  } = useGetWishlistQuery({});
 
   useEffect(() => {
     const token = localStorage.getItem("user");
@@ -93,9 +100,7 @@ export default function Navbar() {
 
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <ShoppingCart className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
-              UzShop
-            </span>
+            <span className="text-xl font-bold">UzShop</span>
           </Link>
 
           <nav className="hidden lg:flex items-center space-x-8">
@@ -158,11 +163,14 @@ export default function Navbar() {
                       className="hover:bg-primary/10 relative"
                     >
                       <Heart className="h-5 w-5" />
-                      <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                        2
-                      </span>
+                      {wishlistLoading ? null : wishlist?.length ? (
+                        <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+                          {wishlist.length > 9 ? "9+" : wishlist.length}
+                        </span>
+                      ) : null}
                     </Button>
                   </Link>
+
                   <Link href="/cart">
                     <Button
                       variant="ghost"

@@ -7,17 +7,34 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-
-const categories = [
-  "Erkaklar",
-  "Ayollar",
-  "Bolalar",
-  "Aksessuarlar",
-  "Sport",
-  "Kiyimlar",
-];
+import { useGetCategoriesQuery } from "@/lib/service/api";
 
 export default function Categories() {
+  const { data: categories, isLoading, error } = useGetCategoriesQuery({});
+
+  if (isLoading) {
+    return <p className="text-center">Yuklanmoqda...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">Xatolik yuz berdi!</p>;
+  }
+
+  if (!categories || categories.length === 0) {
+    return (
+      <section className="py-16">
+        <div className="container px-4 md:px-6 mx-auto text-center">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
+            Kategoriyalar
+          </h2>
+          <p className="text-gray-500 mt-4">
+            Hozircha kategoriyalar mavjud emas.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <div>
       <section className="py-16">
@@ -45,13 +62,13 @@ export default function Categories() {
             }}
             className="pb-6"
           >
-            {categories.map((category) => (
-              <SwiperSlide key={category}>
+            {categories.map((category: { id: number; name: string }) => (
+              <SwiperSlide key={category.id}>
                 <Link
-                  href={`/category/${category.toLowerCase()}`}
+                  href={`/category/${category.name.toLowerCase()}`}
                   className="group flex items-center justify-center p-6 rounded-2xl bg-gray-100 dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 text-center text-lg font-semibold"
                 >
-                  {category}
+                  {category.name}
                 </Link>
               </SwiperSlide>
             ))}

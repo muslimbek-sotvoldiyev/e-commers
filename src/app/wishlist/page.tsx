@@ -11,28 +11,28 @@ const initialWishlist = [
     id: 1,
     name: "Zamonaviy Charm Divan",
     price: 1299000,
-    image: "/placeholder.svg",
+    image: "/defalultproduct.png",
     category: "Mehmonxona",
   },
   {
     id: 2,
     name: "Yog'och Oshxona Stoli",
     price: 899000,
-    image: "/placeholder.svg",
+    image: "/defalultproduct.png",
     category: "Oshxona",
   },
   {
     id: 3,
     name: "Minimalistik Yotoq Ramkasi",
     price: 2199000,
-    image: "/placeholder.svg",
+    image: "/defalultproduct.png",
     category: "Yotoqxona",
   },
   {
     id: 4,
     name: "Ofis Stul",
     price: 599000,
-    image: "/placeholder.svg",
+    image: "/defalultproduct.png",
     category: "Ofis",
   },
 ];
@@ -41,11 +41,11 @@ export default function WishlistPage() {
   const [wishlist, setWishlist] = useState(initialWishlist);
 
   const removeFromWishlist = (id: number) => {
-    setWishlist(wishlist.filter((item) => item.id !== id));
+    console.log("Removing item from wishlist", id);
   };
 
   const clearWishlist = () => {
-    setWishlist([]);
+    console.log("Clearing wishlist");
   };
 
   const addAllToCart = () => {
@@ -71,7 +71,7 @@ export default function WishlistPage() {
                       <div className="flex items-center gap-4">
                         <div className="relative h-20 w-20 flex-shrink-0">
                           <Image
-                            src={item.image || "/placeholder.svg"}
+                            src={item.image || "/defalultproduct.png"}
                             alt={item.name}
                             fill
                             className="rounded-md object-cover"
@@ -130,10 +130,9 @@ export default function WishlistPage() {
                           <td className="px-4 sm:px-6 py-4">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-12 w-12 sm:h-16 sm:w-16 relative">
-                                <Image
-                                  src={item.image || "/placeholder.svg"}
+                                <img
+                                  src={item.image || "/defalultproduct.png"}
                                   alt={item.name}
-                                  fill
                                   className="rounded-md object-cover"
                                 />
                               </div>

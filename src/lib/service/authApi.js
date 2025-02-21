@@ -7,10 +7,10 @@ const AuthApi = createApi({
   }),
   endpoints: (builder) => ({
     login: builder.mutation({
-      query: ({ email, password }) => ({
-        url: "users/login/",
+      query: (credentials) => ({
+        url: "users/login",
         method: "POST",
-        body: { email, password },
+        body: credentials,
       }),
     }),
 

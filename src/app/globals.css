@@ -71,15 +71,11 @@ body {
   }
 }
 
-.grid {
-  grid-auto-flow: dense;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
-
-.grid > div {
-  transition: transform 0.3s ease;
-}
-
-.grid > div:hover {
-  transform: scale(1.02);
-}
-
