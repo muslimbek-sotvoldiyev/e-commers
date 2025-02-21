@@ -20,8 +20,7 @@ import { Input } from "./ui/input";
 import Link from "next/link";
 
 const categories = [
-  { name: "Home", path: "/", icon: Home },
-  { name: "Shop", path: "/shop", icon: ShoppingBag },
+  { name: "Products", path: "/products", icon: ShoppingBag },
   { name: "About", path: "/about", icon: Info },
   { name: "Contact", path: "/contact", icon: Phone },
 ];
@@ -33,7 +32,7 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("user");
     if (token) {
       setIsLoggedIn(true);
     } else {
@@ -43,7 +42,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
 
     checkIsMobile();
@@ -52,15 +51,37 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const menu = document.getElementById("mobile-menu");
+      const menuButton = document.getElementById("menu-button");
+      const target = event.target as HTMLElement;
+
+      if (
+        isMenuOpen &&
+        menu &&
+        !menu.contains(target) &&
+        menuButton &&
+        !menuButton.contains(target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
   return (
     <>
-      <div className={`h-16 ${isMobile ? "hidden" : "block"}`} />
+      <div className="h-16" />
       <header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center mx-auto">
+        <div className="container flex h-16 items-center mx-auto px-4">
           <Button
+            id="menu-button"
             variant="ghost"
             size="icon"
-            className="mr-4 md:hidden"
+            className="mr-4 lg:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? (
@@ -69,41 +90,42 @@ export default function Navbar() {
               <Menu className="h-6 w-6" />
             )}
           </Button>
+
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <ShoppingCart className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
               UzShop
             </span>
           </Link>
-          <nav
-            className={`${
-              isMenuOpen ? "flex" : "hidden"
-            } md:flex flex-col md:flex-row absolute md:relative left-0 right-0 top-16 md:top-0 bg-background md:bg-transparent items-start md:items-center space-y-4 md:space-y-0 space-x-0 md:space-x-8 text-sm font-medium p-4 md:p-0 transition-all duration-300 ease-in-out ${
-              isMenuOpen
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 -translate-y-4 md:opacity-100 md:translate-y-0"
-            }`}
-          >
+
+          <nav className="hidden lg:flex items-center space-x-8">
+            <Link
+              href="/"
+              className="hover:text-primary transition-colors flex items-center space-x-2 text-sm font-medium"
+            >
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Link>
             {categories.map((category) => (
               <Link
                 key={category.path}
                 href={category.path}
-                className="hover:text-primary transition-colors w-full md:w-auto flex items-center space-x-2"
-                onClick={() => setIsMenuOpen(false)}
+                className="hover:text-primary transition-colors flex items-center space-x-2 text-sm font-medium"
               >
-                {isMobile && <category.icon className="h-5 w-5" />}
+                <category.icon className="h-4 w-4" />
                 <span>{category.name}</span>
               </Link>
             ))}
           </nav>
+
           <div className="flex items-center space-x-4 ml-auto">
-            <form className="hidden md:flex items-center">
+            <form className="hidden lg:flex items-center">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Qidirish..."
-                  className="w-64 pl-10 pr-4"
+                  className="w-64 pl-10 pr-4 focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </form>
@@ -111,13 +133,13 @@ export default function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="lg:hidden"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search className="h-5 w-5" />
             </Button>
 
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-2">
               {isLoggedIn ? (
                 <>
                   <Link href="/profile">
@@ -179,105 +201,142 @@ export default function Navbar() {
         </div>
 
         {isSearchOpen && (
-          <div className="md:hidden border-t p-2 bg-background">
-            <form className="flex items-center">
+          <div className="lg:hidden border-t bg-background/95 backdrop-blur absolute w-full left-0 top-16 z-50 shadow-lg">
+            <form className="p-3 flex items-center space-x-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Qidirish..."
-                  className="w-full pl-10 pr-4"
+                  className="w-full pl-10 pr-4 focus:ring-2 focus:ring-primary/20"
+                  autoFocus
                 />
               </div>
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
-                className="ml-2"
+                size="sm"
                 onClick={() => setIsSearchOpen(false)}
               >
-                <X className="h-5 w-5" />
+                Bekor qilish
               </Button>
             </form>
           </div>
         )}
       </header>
 
-      {isMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={() => setIsMenuOpen(false)}
-        />
-      )}
+      <div
+        id="mobile-menu"
+        className={`fixed top-16 left-0 w-64 h-[calc(100vh-4rem)] bg-background border-r transform transition-transform duration-300 ease-in-out z-40 ${
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <nav className="flex flex-col p-4 space-y-4">
+          {categories.map((category) => (
+            <Link
+              key={category.path}
+              href={category.path}
+              className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <category.icon className="h-5 w-5" />
+              <span className="font-medium">{category.name}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
 
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
-          <div className="flex justify-around items-center h-16">
+          <div className="grid grid-cols-4 h-16">
             {isLoggedIn ? (
               <>
-                <Link href="/profile" className="flex-1">
+                <Link href="/">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="flex flex-col items-center w-full"
+                    className="w-full h-full rounded-none flex flex-col items-center justify-center"
+                  >
+                    <Home className="h-5 w-5" />
+                    <span className="text-xs mt-1">Home</span>
+                  </Button>
+                </Link>
+                <Link href="/profile">
+                  <Button
+                    variant="ghost"
+                    className="w-full h-full rounded-none flex flex-col items-center justify-center"
                   >
                     <User className="h-5 w-5" />
                     <span className="text-xs mt-1">Profile</span>
                   </Button>
                 </Link>
-                <Link href="/wishlist" className="flex-1">
+                <Link href="/wishlist">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="flex flex-col items-center w-full relative"
+                    className="w-full h-full rounded-none flex flex-col items-center justify-center"
                   >
-                    <Heart className="h-5 w-5" />
+                    <div className="relative inline-block">
+                      <Heart className="h-5 w-5" />
+                      <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                        2
+                      </span>
+                    </div>
                     <span className="text-xs mt-1">Wishlist</span>
-                    <span className="absolute top-0 right-4 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                      2
-                    </span>
                   </Button>
                 </Link>
-                <Link href="/cart" className="flex-1">
+                <Link href="/cart">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="flex flex-col items-center w-full relative"
+                    className="w-full h-full rounded-none flex flex-col items-center justify-center"
                   >
-                    <ShoppingCart className="h-5 w-5" />
+                    <div className="relative inline-block">
+                      <ShoppingCart className="h-5 w-5" />
+                      <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                        3
+                      </span>
+                    </div>
                     <span className="text-xs mt-1">Cart</span>
-                    <span className="absolute top-0 right-4 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                      3
-                    </span>
                   </Button>
                 </Link>
               </>
             ) : (
               <>
-                <Link href="/login" className="flex-1">
+                <Link href="/">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="flex flex-col items-center w-full"
+                    className="w-full h-full rounded-none flex flex-col items-center justify-center"
                   >
-                    <LogIn className="h-5 w-5" />
-                    <span className="text-xs mt-1">Login</span>
+                    <Home className="h-5 w-5" />
+                    <span className="text-xs mt-1">Home</span>
                   </Button>
                 </Link>
-                <Link href="/register" className="flex-1">
+                <Link href="/login" className="col-span-2">
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="flex flex-col items-center w-full"
+                    className="w-full h-full rounded-none flex items-center justify-center space-x-2"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button
+                    variant="default"
+                    className="w-full h-full rounded-none flex items-center justify-center"
                   >
                     <UserPlus className="h-5 w-5" />
-                    <span className="text-xs mt-1">Register</span>
                   </Button>
                 </Link>
               </>
             )}
           </div>
         </nav>
+      )}
+
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          onClick={() => setIsMenuOpen(false)}
+        />
       )}
     </>
   );

@@ -1,6 +1,21 @@
+"use client";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
+const categories = [
+  "Erkaklar",
+  "Ayollar",
+  "Bolalar",
+  "Aksessuarlar",
+  "Sport",
+  "Kiyimlar",
+];
 
 export default function Categories() {
   return (
@@ -19,34 +34,28 @@ export default function Categories() {
               <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {["Erkaklar", "Ayollar", "Bolalar", "Aksessuarlar", "Sport"].map(
-              (category) => (
+          <Swiper
+            spaceBetween={20}
+            slidesPerView={2}
+            modules={[Navigation, Pagination]}
+            breakpoints={{
+              640: { slidesPerView: 3 },
+              768: { slidesPerView: 4 },
+              1024: { slidesPerView: 5 },
+            }}
+            className="pb-6"
+          >
+            {categories.map((category) => (
+              <SwiperSlide key={category}>
                 <Link
-                  key={category}
                   href={`/category/${category.toLowerCase()}`}
-                  className="group relative overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="group flex items-center justify-center p-6 rounded-2xl bg-gray-100 dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 text-center text-lg font-semibold"
                 >
-                  <div className="aspect-square">
-                    <img
-                      alt={category}
-                      className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                      src="/aaa.jpg"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute inset-0 flex items-end p-6">
-                    <div>
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {category}
-                      </h3>
-                      <span className="text-sm text-white/80">Ko'rish →</span>
-                    </div>
-                  </div>
+                  {category}
                 </Link>
-              )
-            )}
-          </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </section>
     </div>
