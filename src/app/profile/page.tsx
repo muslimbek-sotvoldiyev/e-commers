@@ -20,7 +20,6 @@ export default function ProfilePage() {
   const [user, setUser] = useState(DEFAULT_USER);
 
   useEffect(() => {
-    // Local storage'dan foydalanuvchi ma'lumotlarini o'qish
     const loadUserData = () => {
       try {
         const savedUser = localStorage.getItem("userData");
@@ -47,7 +46,6 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 lg:px-8">
-      {/* Header */}
       <div className="mb-6 flex items-center gap-4">
         <Link href="/" className="rounded-lg p-2 hover:bg-gray-100 md:hidden">
           <ArrowLeft className="h-6 w-6" />
@@ -56,9 +54,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Profile Content */}
         <div className="col-span-2 space-y-6 lg:col-span-3">
-          {/* Profile Header */}
           <div className="flex items-center gap-4">
             <img
               width={80}
@@ -74,7 +70,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Profile Details */}
           <div className="space-y-1 rounded-lg border bg-white">
             <Link
               href="/profile/gender"

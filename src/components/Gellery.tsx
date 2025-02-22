@@ -12,8 +12,8 @@ const Gallery = () => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-12 gap-3 md:gap-4">
-        <div className="col-span-2 md:col-span-4 lg:col-span-6">
+      <div className="grid grid-cols-12 gap-3 md:gap-4">
+        <div className="col-span-6">
           <div className="relative overflow-hidden rounded-2xl group aspect-[16/10]">
             <img
               src="/aa.jpg"
@@ -24,7 +24,7 @@ const Gallery = () => {
           </div>
         </div>
 
-        <div className="col-span-2 md:col-span-2 lg:col-span-3 row-span-2 max-md:hidden">
+        <div className="col-span-3 row-span-2">
           <div className="relative overflow-hidden rounded-2xl group aspect-[3/4]">
             <img
               src="/aaaaa.jpg"
@@ -35,7 +35,7 @@ const Gallery = () => {
           </div>
         </div>
 
-        <div className="col-span-2 md:col-span-2 lg:col-span-3 max-md:hidden">
+        <div className="col-span-3">
           <div className="relative aspect-square overflow-hidden rounded-2xl group">
             <img
               src="/aa.jpg"
@@ -46,7 +46,7 @@ const Gallery = () => {
           </div>
         </div>
 
-        <div className="col-span-2 md:col-span-3 lg:col-span-4">
+        <div className="col-span-4">
           <div className="relative overflow-hidden rounded-2xl group aspect-[16/9]">
             <img
               src="/aa.jpg"
@@ -57,7 +57,7 @@ const Gallery = () => {
           </div>
         </div>
 
-        <div className="col-span-1 md:col-span-3 lg:col-span-4">
+        <div className="col-span-4">
           <div className="relative aspect-square overflow-hidden rounded-2xl group">
             <img
               src="/aaaa.jpg"
@@ -68,7 +68,7 @@ const Gallery = () => {
           </div>
         </div>
 
-        <div className="col-span-2 md:col-span-6 lg:col-span-8">
+        <div className="col-span-8">
           <div className="relative overflow-hidden rounded-2xl group aspect-[16/9]">
             <img
               src="/aa.jpg"

@@ -18,7 +18,8 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import Link from "next/link";
-import { useGetWishlistQuery } from "@/lib/service/api";
+import { useGetWishlistQuery, useGetCartItemQuery } from "@/lib/service/api";
+import { useRouter } from "next/navigation";
 
 const categories = [
   { name: "Products", path: "/products", icon: ShoppingBag },
@@ -32,11 +33,20 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const {
-    data: wishlist,
-    isLoading: wishlistLoading,
-    refetch,
-  } = useGetWishlistQuery({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+  const { data: wishlist, isLoading: wishlistLoading } = useGetWishlistQuery(
+    {}
+  );
+
+  const { data: cartItems, isLoading: cartLoading } = useGetCartItemQuery({});
 
   useEffect(() => {
     const token = localStorage.getItem("user");
@@ -78,6 +88,9 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
+
+  const cartItemsCount = cartItems?.length || 0;
+  const wishlistCount = wishlist?.length || 0;
 
   return (
     <>
@@ -124,15 +137,24 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center space-x-4 ml-auto">
-            <form className="hidden lg:flex items-center">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Qidirish..."
-                  className="w-64 pl-10 pr-4 focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
+            <form
+              onSubmit={handleSearch}
+              className="hidden lg:flex items-center"
+            >
+              <input
+                type="search"
+                placeholder="Qidirish..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <Button
+                type="submit"
+                variant="ghost"
+                className="bg-black text-white p-2 rounded"
+              >
+                Qidirish
+              </Button>
             </form>
 
             <Button
@@ -163,9 +185,9 @@ export default function Navbar() {
                       className="hover:bg-primary/10 relative"
                     >
                       <Heart className="h-5 w-5" />
-                      {wishlistLoading ? null : wishlist?.length ? (
+                      {wishlistLoading ? null : wishlistCount > 0 ? (
                         <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 min-w-4 flex items-center justify-center px-1">
-                          {wishlist.length > 9 ? "9+" : wishlist.length}
+                          {wishlistCount > 9 ? "9+" : wishlistCount}
                         </span>
                       ) : null}
                     </Button>
@@ -178,9 +200,11 @@ export default function Navbar() {
                       className="relative hover:bg-primary/10"
                     >
                       <ShoppingCart className="h-5 w-5" />
-                      <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                        3
-                      </span>
+                      {cartLoading ? null : cartItemsCount > 0 ? (
+                        <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 min-w-4 flex items-center justify-center px-1">
+                          {cartItemsCount > 9 ? "9+" : cartItemsCount}
+                        </span>
+                      ) : null}
                     </Button>
                   </Link>
                 </>
@@ -284,9 +308,11 @@ export default function Navbar() {
                   >
                     <div className="relative inline-block">
                       <Heart className="h-5 w-5" />
-                      <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                        2
-                      </span>
+                      {!wishlistLoading && wishlistCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                          {wishlistCount > 9 ? "9+" : wishlistCount}
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs mt-1">Wishlist</span>
                   </Button>
@@ -298,9 +324,11 @@ export default function Navbar() {
                   >
                     <div className="relative inline-block">
                       <ShoppingCart className="h-5 w-5" />
-                      <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                        3
-                      </span>
+                      {!cartLoading && cartItemsCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                          {cartItemsCount > 9 ? "9+" : cartItemsCount}
+                        </span>
+                      )}
                     </div>
                     <span className="text-xs mt-1">Cart</span>
                   </Button>

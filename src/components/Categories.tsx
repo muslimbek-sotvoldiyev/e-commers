@@ -44,7 +44,7 @@ export default function Categories() {
               Kategoriyalar
             </h2>
             <Link
-              href="/categories"
+              href="/category"
               className="group flex items-center text-sm font-medium text-primary hover:text-primary/80"
             >
               Barchasi
@@ -65,7 +65,7 @@ export default function Categories() {
             {categories.map((category: { id: number; name: string }) => (
               <SwiperSlide key={category.id}>
                 <Link
-                  href={`/category/${category.name.toLowerCase()}`}
+                  href={`/category/${category.id}`}
                   className="group flex items-center justify-center p-6 rounded-2xl bg-gray-100 dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 text-center text-lg font-semibold"
                 >
                   {category.name}

@@ -1,5 +1,6 @@
+import type React from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Azeret_Mono as Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "./StoreProvider";
 import Navbar from "@/components/Navbar";
@@ -26,13 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-full`}
       >
         <StoreProvider>
           <Navbar />
-          {children}
+          <main className="flex-grow">{children}</main>
           <Footer />
         </StoreProvider>
       </body>

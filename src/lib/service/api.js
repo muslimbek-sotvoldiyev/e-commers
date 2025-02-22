@@ -28,9 +28,6 @@ const api = createApi({
       query: ({ id }) => `products/${id}/`,
     }),
 
-    getWishlist: builder.query({
-      query: () => "wishlist",
-    }),
     toggleWishlist: builder.mutation({
       query: (productId) => ({
         url: `wishlist/toggle/${productId}`,
@@ -38,11 +35,52 @@ const api = createApi({
       }),
     }),
 
-    addEmployee: builder.mutation({
-      query: (newEmployee) => ({
-        url: "/employees/",
+    deleteWishlist: builder.mutation({
+      query: (productId) => ({
+        url: `wishlist/${productId}`,
+        method: "DELETE",
+      }),
+    }),
+
+    clearWishlist: builder.mutation({
+      query: () => ({
+        url: `wishlist/clear`,
+        method: "DELETE",
+      }),
+    }),
+
+    getWishlist: builder.query({
+      query: () => "wishlist",
+    }),
+
+    searchProducts: builder.query({
+      query: (searchTerm) =>
+        `products/search?query=${encodeURIComponent(searchTerm)}`,
+    }),
+
+    AddCardItem: builder.mutation({
+      query: (data) => ({
+        url: `/cart-item/`,
         method: "POST",
-        body: newEmployee,
+        body: data,
+      }),
+    }),
+
+    getCartItem: builder.query({
+      query: () => `cart-item`,
+    }),
+
+    updateCartItem: builder.mutation({
+      query: ({ id, quantity }) => ({
+        url: `cart-item/${id}`,
+        method: "PUT",
+        body: { quantity },
+      }),
+    }),
+    deleteCartItem: builder.mutation({
+      query: ({ id }) => ({
+        url: `cart-item/${id}`,
+        method: "DELETE",
       }),
     }),
   }),
@@ -55,6 +93,13 @@ export const {
   useGetProductIdQuery,
   useGetWishlistQuery,
   useToggleWishlistMutation,
+  useDeleteWishlistMutation,
+  useClearWishlistMutation,
+  useGetCartItemQuery,
+  useSearchProductsQuery,
+  useAddCardItemMutation,
+  useDeleteCartItemMutation,
+  useUpdateCartItemMutation,
 } = api;
 
 export default api;

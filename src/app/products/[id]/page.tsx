@@ -1,17 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Minus, Plus, Heart, Star, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
-import { useGetProductIdQuery } from "@/lib/service/api";
+import {
+  useGetProductIdQuery,
+  useAddCardItemMutation,
+  useGetCartItemQuery,
+} from "@/lib/service/api";
 
 export default function ProductDetail() {
+  const router = useRouter();
   const { id } = useParams();
   const productId = Number(id);
   const { data: product, isLoading, error } = useGetProductIdQuery({ id });
+  const {
+    data: cartItems,
+    isLoading: cartLoading,
+    refetch,
+  } = useGetCartItemQuery({});
+  const [addToCart] = useAddCardItemMutation();
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -27,12 +38,57 @@ export default function ProductDetail() {
     setIsWishlisted(!isWishlisted);
   };
 
-  if (isLoading) return <div className="py-12 text-center">Yuklanmoqda...</div>;
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white">
+        <div className="grid lg:grid-cols-2 gap-12">
+          <div className="space-y-6">
+            <div className="aspect-square relative rounded-2xl overflow-hidden bg-gray-200 animate-pulse" />
+            <div className="grid grid-cols-5 gap-4">
+              {[...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className="aspect-square rounded-lg bg-gray-200 animate-pulse"
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <div>
+              <div className="h-8 w-3/4 bg-gray-200 rounded animate-pulse mb-4" />
+              <div className="flex items-center space-x-2 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-5 w-5 bg-gray-200 rounded animate-pulse"
+                  />
+                ))}
+              </div>
+              <div className="h-8 w-1/3 bg-gray-200 rounded animate-pulse" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="h-6 w-full bg-gray-200 rounded animate-pulse" />
+              <div className="h-24 w-full bg-gray-200 rounded animate-pulse" />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+              </div>
+              <div className="h-12 w-full bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (error) return <div className="py-12 text-center">Xatolik yuz berdi!</div>;
   if (!product)
     return <div className="py-12 text-center">Mahsulot topilmadi!</div>;
 
-  // Parse and validate sizes and colors
   let sizes: string[] = [];
   let colors: string[] = [];
 
@@ -59,15 +115,32 @@ export default function ProductDetail() {
   }
 
   const images =
-    product.images.length > 0 ? product.images : ["/placeholder.svg"];
+    product.images.length > 0 ? product.images : ["/defalultproduct.png"];
 
-  // Check if we can add to cart
   const canAddToCart =
     (!sizes.length || selectedSize) && (!colors.length || selectedColor);
 
-  const handleAddToCart = () => {
+  const isProductInCart = cartItems?.some(
+    (item) => item.productId === productId
+  );
+
+  const handleAddToCart = async () => {
     if (!canAddToCart) {
       return;
+    }
+
+    try {
+      const cartData = {
+        productId,
+        quantity,
+        color: selectedColor || undefined,
+        size: selectedSize || undefined,
+      };
+
+      await addToCart(cartData);
+      refetch();
+    } catch (error) {
+      console.error("Error adding to cart:", error);
     }
   };
 
@@ -115,7 +188,7 @@ export default function ProductDetail() {
                   key={i}
                   className={`h-5 w-5 ${
                     i < product.rate
-                      ? "text-gray-900 fill-current"
+                      ? "text-yellow-300 fill-current"
                       : "text-gray-300"
                   }`}
                 />
@@ -126,64 +199,6 @@ export default function ProductDetail() {
             </div>
             <div className="text-3xl font-bold">
               {product.price.toLocaleString()} so'm
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Kategoriya:</span>
-              <span className="font-medium">{product.category}</span>
-            </div>
-
-            {sizes.length > 0 && (
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold mb-2">O'lchamlar:</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {sizes.map((size) => (
-                    <Button
-                      key={size}
-                      variant="outline"
-                      className={`border-gray-300 ${
-                        selectedSize === size
-                          ? "bg-black text-white hover:bg-black"
-                          : "hover:bg-gray-100"
-                      }`}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      {size}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {colors.length > 0 && (
-              <div className="border-t border-gray-200 pt-4">
-                <h3 className="text-lg font-semibold mb-2">Ranglar:</h3>
-                <div className="flex gap-2 flex-wrap">
-                  {colors.map((color) => (
-                    <Button
-                      key={color}
-                      variant="outline"
-                      className={`border-gray-300 ${
-                        selectedColor === color
-                          ? "bg-black text-white hover:bg-black"
-                          : "hover:bg-gray-100"
-                      }`}
-                      onClick={() => setSelectedColor(color)}
-                    >
-                      {color}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="border-t border-gray-200 pt-4">
-              <h3 className="text-lg font-semibold mb-2">Tavsif:</h3>
-              <p className="text-gray-700 leading-relaxed">
-                {product.description}
-              </p>
             </div>
           </div>
 
@@ -216,32 +231,28 @@ export default function ProductDetail() {
             ) : null}
 
             <div className="flex space-x-4">
-              <Button
-                className={`flex-1 ${
-                  canAddToCart
-                    ? "bg-black hover:bg-gray-800"
-                    : "bg-gray-300 cursor-not-allowed"
-                } text-white`}
-                onClick={handleAddToCart}
-                disabled={!canAddToCart}
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                Savatchaga qo'shish
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleWishlist}
-                className={`border-gray-300 ${
-                  isWishlisted ? "bg-gray-100" : "hover:bg-gray-100"
-                }`}
-              >
-                <Heart
-                  className={`h-5 w-5 ${
-                    isWishlisted ? "fill-current text-black" : "text-gray-500"
-                  }`}
-                />
-              </Button>
+              {isProductInCart ? (
+                <Button
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  onClick={() => router.push("/cart")}
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Savatga o'tish
+                </Button>
+              ) : (
+                <Button
+                  className={`flex-1 ${
+                    canAddToCart
+                      ? "bg-black hover:bg-gray-800"
+                      : "bg-gray-300 cursor-not-allowed"
+                  } text-white`}
+                  onClick={handleAddToCart}
+                  disabled={!canAddToCart}
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  Savatchaga qo'shish
+                </Button>
+              )}
             </div>
           </div>
         </div>
