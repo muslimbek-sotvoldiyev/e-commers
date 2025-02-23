@@ -304,3 +304,6 @@ export default function CheckoutForm({
     </form>
   );
 }
+function setCards(arg0: any[]) {
+  throw new Error("Function not implemented.");
+}

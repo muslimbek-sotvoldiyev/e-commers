@@ -25,7 +25,12 @@ export default function UserProfile() {
   useAuth();
   const [editingPersonal, setEditingPersonal] = useState(false);
   const [editingCard, setEditingCard] = useState(false);
-  const [newCard, setNewCard] = useState({
+  const [newCard, setNewCard] = useState<{
+    number: string;
+    date: string;
+    cvv?: string;
+    full_name: string;
+  }>({
     number: "",
     date: "",
     cvv: "",
@@ -46,7 +51,7 @@ export default function UserProfile() {
     isLoading: isCardLoading,
     refetch: Cardrefetch,
   } = useGetCardInfoQuery({});
-  const { data: orderData, isLoading: isOrderLoading } = useGetOrderQuery();
+  const { data: orderData, isLoading: isOrderLoading } = useGetOrderQuery({});
   const [updateMe] = useUpdateMeMutation();
   const [deleteCard] = useDeleteCardMutation();
   const [addCard] = useAddCardMutation();
@@ -98,7 +103,6 @@ export default function UserProfile() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setNewPhoto(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewPhoto(reader.result as string);
@@ -393,7 +397,7 @@ export default function UserProfile() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orderData?.map((order) => (
+                  {orderData?.map((order: any) => (
                     <tr key={order.id} className="border-b">
                       <td className="py-2">#{order.id}</td>
                       <td className="py-2">
@@ -412,7 +416,7 @@ export default function UserProfile() {
                         </Badge>
                       </td>
                       <td className="py-2">
-                        {order.orderItems.map((item) => (
+                        {order.orderItems.map((item: any) => (
                           <div key={item.id}>
                             {item.product.name} x {item.count}
                           </div>

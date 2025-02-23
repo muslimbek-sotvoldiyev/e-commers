@@ -30,7 +30,7 @@ function LocationMarker({
   setPosition: (pos: LatLngType) => void;
 }) {
   const map = useMapEvents({
-    click(e) {
+    click(e: any) {
       setPosition([e.latlng.lat, e.latlng.lng]);
     },
   });
@@ -82,7 +82,6 @@ export default function MapComponent({
       (error) => {
         setError("Joylashuvni aniqlashda xatolik yuz berdi");
         setLoading(false);
-        console.error("Geolocation error:", error);
       }
     );
   }, [onLocationSelect]);
@@ -103,10 +102,7 @@ export default function MapComponent({
         zoom={13}
         style={{ height: "100%", width: "100%" }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {position && <ChangeView center={position} />}
         <LocationMarker position={position} setPosition={handleMapClick} />
       </MapContainer>

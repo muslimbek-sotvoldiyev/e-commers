@@ -44,7 +44,7 @@ export default function ShoppingCart() {
   const calculateTotal = () => {
     if (!cartItems) return 0;
     return cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
+      (total: any, item: any) => total + item.product.price * item.quantity,
       0
     );
   };
@@ -107,7 +107,7 @@ export default function ShoppingCart() {
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
-          {cartItems.map((item) => (
+          {cartItems.map((item: any) => (
             <div
               key={item.id}
               className="bg-white rounded-lg p-4 shadow-sm border"
