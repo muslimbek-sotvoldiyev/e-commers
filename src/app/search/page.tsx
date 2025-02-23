@@ -1,9 +1,11 @@
 "use client";
+
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSearchProductsQuery } from "@/lib/service/api";
 import Products from "@/components/Products";
 
-const SearchPage = () => {
+const SearchContent = () => {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const { data: products, isLoading, error } = useSearchProductsQuery(query);
@@ -46,6 +48,14 @@ const SearchPage = () => {
         )
       )}
     </div>
+  );
+};
+
+const SearchPage = () => {
+  return (
+    <Suspense fallback={<div>Yuklanmoqda...</div>}>
+      <SearchContent />
+    </Suspense>
   );
 };
 
