@@ -8,8 +8,10 @@ import api, {
   useUpdateCartItemMutation,
   useDeleteCartItemMutation,
 } from "@/lib/service/api";
+import useAuth from "@/hooks/auth";
 
 export default function ShoppingCart() {
+  useAuth();
   const router = useRouter();
   const { data: cartItems, isLoading, refetch } = useGetCartItemQuery({});
   const [updateCartItem] = useUpdateCartItemMutation();

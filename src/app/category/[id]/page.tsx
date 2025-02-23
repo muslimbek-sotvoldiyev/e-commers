@@ -36,7 +36,6 @@ export default function Page() {
       : [];
   }, [data?.products]);
 
-  console.log(products);
 
   return (
     <div>

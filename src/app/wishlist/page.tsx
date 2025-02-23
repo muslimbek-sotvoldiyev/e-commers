@@ -10,8 +10,10 @@ import {
   useDeleteWishlistMutation,
   useClearWishlistMutation,
 } from "@/lib/service/api";
+import useAuth from "@/hooks/auth";
 
 export default function WishlistPage() {
+  useAuth();
   const router = useRouter();
   const { data, error, isLoading, refetch } = useGetWishlistQuery({});
   const [deleteWishlist] = useDeleteWishlistMutation();
@@ -84,7 +86,7 @@ export default function WishlistPage() {
     : [];
 
   const removeFromWishlist = async (id: number, e: React.MouseEvent) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     try {
       await deleteWishlist(id).unwrap();
       refetch();

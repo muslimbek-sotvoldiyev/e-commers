@@ -58,7 +58,7 @@ const api = createApi({
         `products/search?query=${encodeURIComponent(searchTerm)}`,
     }),
 
-    AddCardItem: builder.mutation({
+    AddCartItem: builder.mutation({
       query: (data) => ({
         url: `/cart-item/`,
         method: "POST",
@@ -83,6 +83,53 @@ const api = createApi({
         method: "DELETE",
       }),
     }),
+    createOrder: builder.mutation({
+      query: (orderData) => ({
+        url: "/order",
+        method: "POST",
+        body: orderData,
+      }),
+    }),
+    GetOrder: builder.query({
+      query: () => `order`,
+    }),
+
+    getCardInfo: builder.query({
+      query: () => `card-info/user`,
+    }),
+
+    getMe: builder.query({
+      query: () => `users/mee`,
+    }),
+    updateMe: builder.mutation({
+      query: (userData) => ({
+        url: "users",
+        method: "PATCH",
+        body: userData,
+      }),
+    }),
+    DeleteCard: builder.mutation({
+      query: ({ id }) => ({
+        url: `card-info/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    addCard: builder.mutation({
+      query: (orderData) => ({
+        url: "/card-info",
+        method: "POST",
+        body: orderData,
+      }),
+    }),
+
+    RefreshToken: builder.mutation({
+      query: (orderData) => ({
+        url: "/refresh",
+        method: "POST",
+        body: orderData,
+      }),
+    }),
   }),
 });
 
@@ -97,9 +144,17 @@ export const {
   useClearWishlistMutation,
   useGetCartItemQuery,
   useSearchProductsQuery,
-  useAddCardItemMutation,
+  useAddCartItemMutation,
   useDeleteCartItemMutation,
   useUpdateCartItemMutation,
+  useCreateOrderMutation,
+  useGetCardInfoQuery,
+  useGetMeQuery,
+  useUpdateMeMutation,
+  useDeleteCardMutation,
+  useAddCardMutation,
+  useRefreshTokenMutation,
+  useGetOrderQuery,
 } = api;
 
 export default api;

@@ -11,12 +11,15 @@ import { useLoginMutation } from "@/lib/service/authApi";
 import { useRouter } from "next/navigation";
 import { GithubIcon } from "lucide-react";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import api from "@/lib/service/api";
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
   className?: string;
 }
 
 export function LoginForm({ className, ...props }: LoginFormProps) {
+  const dispatch = useDispatch();
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
   const [formData, setFormData] = useState({
@@ -52,6 +55,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
       if (result && result.accessToken) {
         saveToLocalStorage(result);
+        dispatch(api.util.resetApiState());
         router.push("/");
       } else {
         setError("Login failed. Please try again.");

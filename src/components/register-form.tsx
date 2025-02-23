@@ -70,7 +70,6 @@ export function RegisterForm({
 
       const result = await register(formDataToSend).unwrap();
 
-      console.log("result", result);
       if (result && result.savedUser) {
         localStorage.setItem("accessToken", result.savedUser.accessToken);
         localStorage.setItem("refreshToken", result.savedUser.refreshToken);

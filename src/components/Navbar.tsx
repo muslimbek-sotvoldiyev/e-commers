@@ -18,7 +18,11 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import Link from "next/link";
-import { useGetWishlistQuery, useGetCartItemQuery } from "@/lib/service/api";
+import {
+  useGetWishlistQuery,
+  useGetCartItemQuery,
+  useGetMeQuery,
+} from "@/lib/service/api";
 import { useRouter } from "next/navigation";
 
 const categories = [
@@ -30,32 +34,38 @@ const categories = [
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
     }
   };
+
+  const {
+    data: userData,
+    error: userError,
+    isLoading: userLoading,
+  } = useGetMeQuery({});
+
   const { data: wishlist, isLoading: wishlistLoading } = useGetWishlistQuery(
-    {}
+    {},
+    {
+      skip: !userData || !!userError,
+    }
   );
 
-  const { data: cartItems, isLoading: cartLoading } = useGetCartItemQuery({});
-
-  useEffect(() => {
-    const token = localStorage.getItem("user");
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
+  const { data: cartItems, isLoading: cartLoading } = useGetCartItemQuery(
+    {},
+    {
+      skip: !userData || !!userError,
     }
-  }, []);
+  );
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -72,6 +82,7 @@ export default function Navbar() {
     const handleClickOutside = (event: MouseEvent) => {
       const menu = document.getElementById("mobile-menu");
       const menuButton = document.getElementById("menu-button");
+      const searchContainer = document.getElementById("search-container");
       const target = event.target as HTMLElement;
 
       if (
@@ -83,14 +94,24 @@ export default function Navbar() {
       ) {
         setIsMenuOpen(false);
       }
+
+      if (
+        isSearchOpen &&
+        searchContainer &&
+        !searchContainer.contains(target)
+      ) {
+        setIsSearchOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isSearchOpen]);
 
   const cartItemsCount = cartItems?.length || 0;
   const wishlistCount = wishlist?.length || 0;
+
+  const shouldShowAuthButtons = !userData || userError;
 
   return (
     <>
@@ -139,20 +160,19 @@ export default function Navbar() {
           <div className="flex items-center space-x-4 ml-auto">
             <form
               onSubmit={handleSearch}
-              className="hidden lg:flex items-center"
+              className="hidden lg:flex items-center space-x-2"
             >
-              <input
-                type="search"
-                placeholder="Qidirish..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <Button
-                type="submit"
-                variant="ghost"
-                className="bg-black text-white p-2 rounded"
-              >
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Qidirish..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 w-64 focus:w-80 transition-all duration-300"
+                />
+              </div>
+              <Button type="submit" variant="default">
                 Qidirish
               </Button>
             </form>
@@ -167,7 +187,26 @@ export default function Navbar() {
             </Button>
 
             <div className="hidden lg:flex items-center space-x-2">
-              {isLoggedIn ? (
+              {shouldShowAuthButtons ? (
+                <>
+                  <Link href="/login">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover:bg-primary/10"
+                    >
+                      <LogIn className="h-5 w-5 mr-2" />
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button variant="default" size="sm">
+                      <UserPlus className="h-5 w-5 mr-2" />
+                      Register
+                    </Button>
+                  </Link>
+                </>
+              ) : (
                 <>
                   <Link href="/profile">
                     <Button
@@ -192,7 +231,6 @@ export default function Navbar() {
                       ) : null}
                     </Button>
                   </Link>
-
                   <Link href="/cart">
                     <Button
                       variant="ghost"
@@ -208,38 +246,27 @@ export default function Navbar() {
                     </Button>
                   </Link>
                 </>
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="hover:bg-primary/10"
-                    >
-                      <LogIn className="h-5 w-5 mr-2" />
-                      Login
-                    </Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button variant="default" size="sm">
-                      <UserPlus className="h-5 w-5 mr-2" />
-                      Register
-                    </Button>
-                  </Link>
-                </>
               )}
             </div>
           </div>
         </div>
 
         {isSearchOpen && (
-          <div className="lg:hidden border-t bg-background/95 backdrop-blur absolute w-full left-0 top-16 z-50 shadow-lg">
-            <form className="p-3 flex items-center space-x-2">
+          <div
+            id="search-container"
+            className="lg:hidden border-t bg-background/95 backdrop-blur absolute w-full left-0 top-16 z-50 shadow-lg"
+          >
+            <form
+              onSubmit={handleSearch}
+              className="p-3 flex items-center space-x-2"
+            >
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Qidirish..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 focus:ring-2 focus:ring-primary/20"
                   autoFocus
                 />
@@ -251,6 +278,9 @@ export default function Navbar() {
                 onClick={() => setIsSearchOpen(false)}
               >
                 Bekor qilish
+              </Button>
+              <Button type="submit" variant="default" size="sm">
+                Qidirish
               </Button>
             </form>
           </div>
@@ -281,7 +311,7 @@ export default function Navbar() {
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
           <div className="grid grid-cols-4 h-16">
-            {isLoggedIn ? (
+            {!shouldShowAuthButtons ? (
               <>
                 <Link href="/">
                   <Button

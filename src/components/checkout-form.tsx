@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreditCard, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,58 +37,89 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import api, {
+  useCreateOrderMutation,
+  useGetCardInfoQuery,
+  useGetCartItemQuery,
+} from "@/lib/service/api";
+import OrderSkeleton from "./orderSkeleton";
+import { useDispatch } from "react-redux";
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-};
-
-type Card = {
-  id: number;
-  number: string;
-  expiry: string;
-};
-
-// Namuna mahsulotlar
-const cartItems: Product[] = [
-  { id: 1, name: "Smartfon X", price: 1200000, quantity: 1 },
-  { id: 2, name: "Simsiz quloqchin Y", price: 300000, quantity: 2 },
-  { id: 3, name: "Quvvatlagich Z", price: 150000, quantity: 1 },
-];
-
-// Namuna saqlangan kartalar
-const initialCards: Card[] = [
-  { id: 1, number: "**** **** **** 1234", expiry: "12/24" },
-  { id: 2, number: "**** **** **** 5678", expiry: "06/25" },
-];
-
-export default function CheckoutForm() {
+export default function CheckoutForm({
+  selectedLocation,
+}: {
+  selectedLocation: { lat: number; long: number } | null;
+}) {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  const [cards, setCards] = useState<Card[]>(initialCards);
   const [newCard, setNewCard] = useState({ number: "", expiry: "", cvc: "" });
   const [isAddingCard, setIsAddingCard] = useState(false);
+  const [description, setDescription] = useState("");
+  const dispatch = useDispatch();
 
-  // Umumiy summani hisoblash
+  const { data: cartItems = [], isLoading: isCartLoading } =
+    useGetCartItemQuery({});
+  const { data: cards = [], isLoading: isLoadingCard } = useGetCardInfoQuery(
+    {}
+  );
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
+
+  if (isLoadingCard && isCartLoading) {
+    return <OrderSkeleton />;
+  }
+
   const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total: any, item: any) => total + item.product.price * item.quantity,
     0
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Bu yerda backendga ma'lumotlarni yuborish kerak
-    console.log({
-      paymentMethod,
-      selectedCard: cards.find((card) => card.id === selectedCard),
-      cartItems,
-      totalAmount,
-      // Xarita koordinatalari MapComponent dan olinadi
-    });
-    router.push("/order-confirmation");
+
+    if (!selectedLocation) {
+      toast.error("Iltimos, xaritadan joyni tanlang");
+      return;
+    }
+
+    if (paymentMethod === "card" && !selectedCard) {
+      toast.error("Iltimos, to'lov kartasini tanlang");
+      return;
+    }
+
+    const orderData: any = {
+      long: selectedLocation.long,
+      lat: selectedLocation.lat,
+      description,
+    };
+
+    if (selectedCard) {
+      orderData.cardInfoId = selectedCard;
+    }
+
+    console.log("Buyurtma ma'lumotlari:", orderData);
+
+    try {
+      const result = await createOrder(orderData).unwrap();
+      if (!result) {
+        throw new Error("Serverdan noto‘g‘ri javob keldi");
+      }
+
+      toast.success("Buyurtmangiz qabul qilindi");
+      dispatch(api.util.resetApiState());
+      router.push("/");
+    } catch (error: any) {
+      let errorMessage =
+        "Buyurtma yaratishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.";
+
+      if (error?.data?.message) {
+        errorMessage = error.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage);
+    }
   };
 
   const handleAddCard = () => {
@@ -118,13 +150,15 @@ export default function CheckoutForm() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cartItems.map((item) => (
+              {cartItems.map((item: any) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.price.toLocaleString()} so'm</TableCell>
+                  <TableCell>{item.product.name}</TableCell>
+                  <TableCell>
+                    {item.product.price.toLocaleString()} so'm
+                  </TableCell>
                   <TableCell>{item.quantity}</TableCell>
                   <TableCell className="text-right">
-                    {(item.price * item.quantity).toLocaleString()} so'm
+                    {(item.product.price * item.quantity).toLocaleString()} so'm
                   </TableCell>
                 </TableRow>
               ))}
@@ -169,14 +203,15 @@ export default function CheckoutForm() {
               value={selectedCard?.toString()}
               onValueChange={(value) => setSelectedCard(Number(value))}
             >
-              {cards.map((card) => (
+              {cards.map((card: any) => (
                 <div key={card.id} className="flex items-center space-x-2">
                   <RadioGroupItem
                     value={card.id.toString()}
                     id={`card-${card.id}`}
                   />
                   <Label htmlFor={`card-${card.id}`}>
-                    {card.number} (Amal qilish muddati: {card.expiry})
+                    ****.****.****.{card.number.slice(-4)} (Amal.qilish.muddati:{" "}
+                    {card.date.slice(0, 2)}/{card.date.slice(3, 5)})
                   </Label>
                 </div>
               ))}
@@ -247,10 +282,24 @@ export default function CheckoutForm() {
         </Card>
       )}
 
-      <Textarea placeholder="Qo'shimcha manzil ma'lumotlari (ixtiyoriy)" />
+      <Textarea
+        placeholder="Qo'shimcha manzil ma'lumotlari (ixtiyoriy)"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
 
-      <Button type="submit" className="w-full">
-        <CreditCard className="mr-2 h-4 w-4" /> Buyurtma berish
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <CreditCard className="mr-2 h-4 w-4 animate-spin" />
+            Buyurtma qilinmoqda...
+          </>
+        ) : (
+          <>
+            <CreditCard className="mr-2 h-4 w-4" />
+            Buyurtma berish
+          </>
+        )}
       </Button>
     </form>
   );

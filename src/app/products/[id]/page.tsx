@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   useGetProductIdQuery,
-  useAddCardItemMutation,
+  useAddCartItemMutation,
   useGetCartItemQuery,
 } from "@/lib/service/api";
 
@@ -16,26 +16,22 @@ export default function ProductDetail() {
   const router = useRouter();
   const { id } = useParams();
   const productId = Number(id);
+
   const { data: product, isLoading, error } = useGetProductIdQuery({ id });
   const {
     data: cartItems,
     isLoading: cartLoading,
     refetch,
   } = useGetCartItemQuery({});
-  const [addToCart] = useAddCardItemMutation();
+  const [AddCartItem] = useAddCartItemMutation();
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const handleQuantityChange = (change: number) => {
     setQuantity(Math.max(1, quantity + change));
-  };
-
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
   };
 
   if (isLoading) {
@@ -71,6 +67,19 @@ export default function ProductDetail() {
             <div className="space-y-4">
               <div className="h-6 w-full bg-gray-200 rounded animate-pulse" />
               <div className="h-24 w-full bg-gray-200 rounded animate-pulse" />
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-6 w-1/4 bg-gray-200 rounded animate-pulse" />
+                  <div className="flex gap-2">
+                    {[...Array(4)].map((_, j) => (
+                      <div
+                        key={j}
+                        className="h-10 w-16 bg-gray-200 rounded animate-pulse"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="space-y-4">
@@ -121,7 +130,7 @@ export default function ProductDetail() {
     (!sizes.length || selectedSize) && (!colors.length || selectedColor);
 
   const isProductInCart = cartItems?.some(
-    (item) => item.productId === productId
+    (item: any) => item.productId === productId
   );
 
   const handleAddToCart = async () => {
@@ -137,7 +146,7 @@ export default function ProductDetail() {
         size: selectedSize || undefined,
       };
 
-      await addToCart(cartData);
+      await AddCartItem(cartData);
       refetch();
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -199,6 +208,64 @@ export default function ProductDetail() {
             </div>
             <div className="text-3xl font-bold">
               {product.price.toLocaleString()} so'm
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Kategoriya:</span>
+              <span className="font-medium">{product.category}</span>
+            </div>
+
+            {sizes.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold mb-2">O'lchamlar:</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {sizes.map((size) => (
+                    <Button
+                      key={size}
+                      variant="outline"
+                      className={`border-gray-300 ${
+                        selectedSize === size
+                          ? "bg-black text-white hover:bg-black"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setSelectedSize(size)}
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {colors.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-semibold mb-2">Ranglar:</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {colors.map((color) => (
+                    <Button
+                      key={color}
+                      variant="outline"
+                      className={`border-gray-300 ${
+                        selectedColor === color
+                          ? "bg-black text-white hover:bg-black"
+                          : "hover:bg-gray-100"
+                      }`}
+                      onClick={() => setSelectedColor(color)}
+                    >
+                      {color}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-gray-200 pt-4">
+              <h3 className="text-lg font-semibold mb-2">Tavsif:</h3>
+              <p className="text-gray-700 leading-relaxed">
+                {product.description}
+              </p>
             </div>
           </div>
 

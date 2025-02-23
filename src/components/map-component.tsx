@@ -13,12 +13,11 @@ import L from "leaflet";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin } from "lucide-react";
 
-// Leaflet ikonkasini to'g'irlash
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "/location.png",
-  // iconUrl: "/location.png",
-  shadowUrl: "/location.png",
+  iconUrl: "/location.png",
+  shadowUrl: "/",
 });
 
 type LatLngType = [number, number];
@@ -51,7 +50,11 @@ function ChangeView({ center }: { center: LatLngType }) {
   return null;
 }
 
-export default function MapComponent() {
+export default function MapComponent({
+  onLocationSelect,
+}: {
+  onLocationSelect: (location: { lat: number; long: number }) => void;
+}) {
   const [position, setPosition] = useState<LatLngType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,12 @@ export default function MapComponent() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setPosition([position.coords.latitude, position.coords.longitude]);
+        const newPosition: LatLngType = [
+          position.coords.latitude,
+          position.coords.longitude,
+        ];
+        setPosition(newPosition);
+        onLocationSelect({ lat: newPosition[0], long: newPosition[1] });
         setLoading(false);
       },
       (error) => {
@@ -77,12 +85,16 @@ export default function MapComponent() {
         console.error("Geolocation error:", error);
       }
     );
-  }, []);
+  }, [onLocationSelect]);
 
   useEffect(() => {
-    // Komponent yuklanganda avtomatik ravishda joylashuvni aniqlash
     getLocation();
   }, [getLocation]);
+
+  const handleMapClick = (newPosition: LatLngType) => {
+    setPosition(newPosition);
+    onLocationSelect({ lat: newPosition[0], long: newPosition[1] });
+  };
 
   return (
     <div className="relative h-[400px] md:h-full">
@@ -96,7 +108,7 @@ export default function MapComponent() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {position && <ChangeView center={position} />}
-        <LocationMarker position={position} setPosition={setPosition} />
+        <LocationMarker position={position} setPosition={handleMapClick} />
       </MapContainer>
       <div className="absolute top-4 right-4 z-[1000]">
         <Button onClick={getLocation} disabled={loading}>
