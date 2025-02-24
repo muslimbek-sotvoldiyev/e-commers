@@ -218,7 +218,13 @@ export default function CheckoutForm({
             </RadioGroup>
             <Dialog open={isAddingCard} onOpenChange={setIsAddingCard}>
               <DialogTrigger asChild>
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    router.push("profile");
+                  }}
+                >
                   <Plus className="mr-2 h-4 w-4" /> Yangi karta qo'shish
                 </Button>
               </DialogTrigger>
