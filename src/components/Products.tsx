@@ -122,7 +122,7 @@ export default function Products({
                         className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
                         src={
                           product.images?.[0]
-                            ? `http://localhost:4000${product.images[0]}`
+                            ? `${product.images[0]}`
                             : "/defaultproduct.png"
                         }
                       />
