@@ -159,7 +159,7 @@ export default function ProductDetail() {
         <div className="space-y-6">
           <div className="aspect-square relative rounded-2xl overflow-hidden border border-gray-200 shadow-lg">
             <Image
-              src={`http://localhost:4000${images[selectedImage]}`}
+              src={`${images[selectedImage]}`}
               alt={product.name}
               layout="fill"
               objectFit="cover"
@@ -178,7 +178,7 @@ export default function ProductDetail() {
                 onClick={() => setSelectedImage(index)}
               >
                 <Image
-                  src={`http://localhost:4000${image}`}
+                  src={`${image}`}
                   alt={`${product.name} ${index + 1}`}
                   layout="fill"
                   objectFit="cover"
